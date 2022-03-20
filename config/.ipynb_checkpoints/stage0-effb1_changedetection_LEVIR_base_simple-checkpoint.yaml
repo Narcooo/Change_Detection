@@ -1,0 +1,78 @@
+logdir: models/stage1/effb1-LEVIR_apex_base_focalloss_simple_nosacle_random_tran8/
+gpus: [0]
+distributed: true
+fp16: false
+lrank: 0
+
+# define model
+model:
+  architecture: ChangeModel_simple
+  model_sacle: 1
+  preweightpath: /data
+  init_params:
+    encoder_name: efficientnet-b1
+    encoder_weights: imagenet
+
+data:
+
+  df_path: /data/datasets/changedetection/change_folds.csv
+  fold: 1
+
+  # datasets
+  train_dataset:
+    name: ChangeDataset_LEVIR
+    init_params:
+      root_dir: /data/datasets/LEVIR/train/
+      transform_name: train_transform_8
+      model: train
+
+  valid_dataset:
+    name: ChangeDataset_LEVIR
+    init_params:
+      root_dir: /data/datasets/LEVIR/val/
+      transform_name: test_transform_4
+      model: val
+
+  # loaders
+  train_dataloader:
+    batch_size: 8
+    drop_last: true
+    pin_memory: true
+    num_workers: 4
+
+  valid_dataloader:
+    batch_size: 4
+    shuffle: false
+    drop_last: false
+    pin_memory: true
+    num_workers: 6
+
+training:
+
+  losses:
+    change_mask:
+      name: FocalDiceLoss
+      init_params:
+
+  metrics:
+    change_mask:
+      - name: MicroF1
+        init_params:
+
+  optimizer:
+    name: Adam
+    init_params:
+      lr: 0.001
+
+  scheduler:
+    name: PolyLR
+    monitor: val_change_mask_micro_f1
+    init_params:
+      epochs: 300
+
+  fit:
+    epochs: 300
+    accumulation_steps: 4
+    verbose: true
+
+  callbacks: []

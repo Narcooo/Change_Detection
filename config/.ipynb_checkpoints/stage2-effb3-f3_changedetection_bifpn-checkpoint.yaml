@@ -1,0 +1,97 @@
+logdir: models/stage6/Changedetection_effb3-f3_apex_newloss_bifpn/
+gpus: [0]
+distributed: true
+fp16: false
+lrank: 0
+
+# define model
+model:
+  architecture: ChangeModel_bifpn
+  model_sacle: 1
+  preweightpath: /data # /changecompition/Radiaipytorch_studio_mclass/models/stage1/pretrain_pt/landcover.pth
+  init_params:
+    encoder_name: efficientnet-b3
+    encoder_weights: imagenet
+
+data:
+
+  df_path: /data/datasets/changedetection/change_folds.csv
+  fold: 3
+
+  # datasets
+  train_dataset:
+    name: ChangeDataset
+    init_params:
+      root_dir: /data/datasets/changedetection/train/
+      transform_name: train_transform_6
+
+  valid_dataset:
+    name: ChangeDataset
+    init_params:
+      root_dir: /data/datasets/changedetection/train/
+      transform_name: test_transform_4
+
+  # loaders
+  train_dataloader:
+    batch_size: 4
+    drop_last: true
+    pin_memory: true
+    num_workers: 4
+
+  valid_dataloader:
+    batch_size: 16
+    shuffle: false
+    drop_last: false
+    pin_memory: true
+    num_workers: 16
+
+training:
+
+  losses:
+    mask1:
+      name: CrossEntropy
+      init_params:
+
+    mask2:
+      name: CrossEntropy
+      init_params:
+
+    change_mask:
+      name: BCEDiceLoss
+      init_params:
+
+    union_mask:
+      name: Changeloss
+      init_params:
+
+  metrics:
+    mask1:
+      - name: MeanIoU
+        init_params:
+
+    mask2:
+      - name: MeanIoU
+        init_params:
+
+    change_mask:
+      - name: MicroIoU
+        init_params:
+
+
+
+  optimizer:
+    name: Adam
+    init_params:
+      lr: 0.001
+
+  scheduler:
+    name: PolyLR
+    init_params:
+      epochs: 200
+
+  fit:
+    epochs: 200
+    accumulation_steps: 4
+    verbose: true
+
+  callbacks: []

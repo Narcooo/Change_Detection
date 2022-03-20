@@ -1,0 +1,56 @@
+config: config/Final_11_8/effb3_change_cad_102_s15_FDA_alltrain.yaml
+data:
+  df_path: config/HUWEI_5folds.csv
+  fold: -1
+  train_dataloader:
+    batch_size: 2
+    drop_last: true
+    num_workers: 4
+    pin_memory: true
+  train_dataset:
+    init_params:
+      model: train
+      root_dir: D:/Dataset/ChangeDetection/Huawei_2021/train
+      transform_color_name: train_transform_color_3
+      transform_name: train_transform_102
+    name: ChangeDataset_HW_FDA
+distributed: false
+fp16: false
+gpus:
+- 0
+logdir: models/stage_HW_Final_11_8/effb3_change_cad_s15_FDA_alltrain/
+lrank: 0
+model:
+  architecture: ChangeModel_CAD
+  init_params:
+    encoder_name: efficientnet-b3
+    encoder_weights: imagenet
+  model_output_keys:
+  - mask
+  model_sacle: 1.5
+  preweightpath: /data
+save_top: 100
+training:
+  callbacks: []
+  fit:
+    accumulation_steps: 4
+    epochs: 29
+    verbose: true
+  losses:
+    mask:
+      init_params: null
+      name: BCEDiceLoss
+  metrics:
+    mask:
+    - init_params: null
+      name: MicroF1
+  optimizer:
+    init_params:
+      lr: 0.001
+    name: Adam
+  scheduler:
+    init_params:
+      epochs: 100
+    monitor: mask_micro_f1
+    name: PolyLR
+val_distributed: false
